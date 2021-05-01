@@ -43,7 +43,7 @@ enum HintModeInputIntent {
             return .exit
         }
         if event.keyCode == kVK_Delete { return .backspace }
-        if event.keyCode == kVK_Space { return .rotate }
+        if event.keyCode == kVK_Tab { return .rotate }
 
         if let characters = event.charactersIgnoringModifiers {
             let action: HintAction = {
