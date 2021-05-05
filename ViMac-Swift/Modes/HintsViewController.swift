@@ -14,11 +14,13 @@ class HintsViewController: NSViewController {
     var typed: String
 
     var hintViews: [HintView]!
+    let modifiers: ClickModifiers
     
-    init(hints: [Hint], textSize: CGFloat, typed: String = "") {
+    init(hints: [Hint], textSize: CGFloat, typed: String = "", modifiers: ClickModifiers) {
         self.hints = hints
         self.textSize = textSize
         self.typed = typed
+        self.modifiers = modifiers
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -34,7 +36,7 @@ class HintsViewController: NSViewController {
         super.viewDidAppear()
         
         self.hintViews = hints
-            .map { renderHint($0) }
+            .map { renderHint($0, modifiers: modifiers) }
             .compactMap({ $0 })
 
         for hintView in self.hintViews {
@@ -69,8 +71,8 @@ class HintsViewController: NSViewController {
 
     // are you changing the location where hints are rendered?
     // make sure to update HintModeController#performHintAction as well
-    func renderHint(_ hint: Hint) -> HintView? {
-        let clickPosition = GeometryUtils.convertAXFrameToGlobal(NSRect(origin: hint.clickPosition(), size: CGSize(width:0,height:0))).origin
+    func renderHint(_ hint: Hint, modifiers: ClickModifiers) -> HintView? {
+        let clickPosition = GeometryUtils.convertAXFrameToGlobal(NSRect(origin: hint.clickPosition(modifiers: modifiers), size: CGSize(width:0,height:0))).origin
 
         let view = HintView(associatedElement: hint.element, hintTextSize: CGFloat(textSize), hintText: hint.text, typedHintText: "")
 

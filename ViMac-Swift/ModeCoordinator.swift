@@ -124,7 +124,7 @@ class ModeCoordinator: ModeControllerDelegate {
         modeController!.activate()
     }
     
-    func setHintMode(mechanism: String) {
+    func setHintMode(mechanism: String, modifiers: ClickModifiers? = nil) {
         if let modeController = modeController {
             modeController.deactivate()
         }
@@ -149,8 +149,13 @@ class ModeCoordinator: ModeControllerDelegate {
         
         let activationCount = UserDefaults.standard.integer(forKey: "hintModeActivationCount")
         UserDefaults.standard.set(activationCount + 1, forKey: "hintModeActivationCount")
+
+        let hintModeController = HintModeController(app: app, window: window)
+        if modifiers != nil {
+            hintModeController.modifiers = modifiers!
+        }
         
-        modeController = HintModeController(app: app, window: window)
+        modeController = hintModeController
         modeController?.delegate = self
         modeController!.activate()
     }
