@@ -194,7 +194,7 @@ class HintModeUserInterface {
         
         // a window can extend outside the screen it belongs to (NSScreen.main)
         // it is visible in other screens if the "Displays have separate spaces" option is disabled
-        return windowFrame.union(NSScreen.main!.frame)
+        return GeometryUtils.screensFrame()
     }
 
     func show() {
