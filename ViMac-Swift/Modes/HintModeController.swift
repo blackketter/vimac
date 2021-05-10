@@ -36,8 +36,9 @@ enum HintModeInputIntent {
     case advance(by: String, action: HintAction)
 
     case reload
-    case multiple
+    case lock
     case center
+    case grid
 
     case optionModifier
     case shiftModifier
@@ -66,8 +67,9 @@ enum HintModeInputIntent {
         if event.keyCode == kVK_Tab { return .rotate }
 
         if event.keyCode == kVK_ANSI_R { return .reload }
-        if event.keyCode == kVK_ANSI_U { return .multiple }
+        if event.keyCode == kVK_ANSI_U { return .lock }
         if event.keyCode == kVK_ANSI_Grave { return .center }
+        if event.keyCode == kVK_ANSI_Equal { return .grid }
 
         if event.keyCode == kVK_ANSI_Z { return .optionModifier }
         if event.keyCode == kVK_ANSI_Quote { return .shiftModifier }
@@ -85,7 +87,7 @@ enum HintModeInputIntent {
         if event.keyCode == kVK_ANSI_Y { return .move }
 
         if event.keyCode == kVK_ANSI_Slash { return .showHelp }
-        
+
         if let characters = event.charactersIgnoringModifiers {
             let action: HintAction = {
                 if (event.modifierFlags.rawValue & NSEvent.ModifierFlags.shift.rawValue == NSEvent.ModifierFlags.shift.rawValue) {
@@ -191,7 +193,7 @@ class HintModeUserInterface {
         if let fullscreenScreen = fullscreenScreen {
             return fullscreenScreen.frame
         }
-        
+
         // a window can extend outside the screen it belongs to (NSScreen.main)
         // it is visible in other screens if the "Displays have separate spaces" option is disabled
         return GeometryUtils.screensFrame()
@@ -211,6 +213,8 @@ class HintModeUserInterface {
     func setHints(hints: [Hint], modifiers: ClickModifiers) {
         self.hintsViewController = HintsViewController(hints: hints, textSize: CGFloat(textSize), typed: "", modifiers: modifiers)
         self.contentViewController.setChildViewController(self.hintsViewController!)
+        os_log("Hint Mode Activated: %@ hints", String(hints.count))
+
     }
 
     func updateInput(input: String) {
@@ -235,8 +239,9 @@ class ClickModifiers {
     var drag = false
     var move = false
 
-    var multiple = false
+    var lock = false
     var center = false
+    var grid = false
 }
 
 class HintModeController: ModeController {
@@ -317,8 +322,8 @@ class HintModeController: ModeController {
 
         switch intent {
         case .exit:
-            modifiers.multiple = false
             self.deactivate()
+
         case .rotate:
             guard let ui = ui else { return }
             Analytics.shared().track("Hint Mode Rotated Hints", properties: [
@@ -326,9 +331,9 @@ class HintModeController: ModeController {
             ])
             ui.rotateHints()
 
-        case .multiple:
-            modifiers.multiple = !modifiers.multiple
-            os_log("[Hint Mode] Multiple Modifier %@", String(modifiers.multiple))
+        case .lock:
+            modifiers.lock = !modifiers.lock
+            os_log("[Hint Mode] Lock Modifier %@", String(modifiers.lock))
 
         case .reload:
             self.deactivate()
@@ -342,6 +347,13 @@ class HintModeController: ModeController {
             let delegate = NSApplication.shared.delegate as! AppDelegate
             delegate.modeCoordinator.setHintMode(mechanism: "Center", modifiers: modifiers)
             os_log("[Hint Mode] Center")
+
+        case .grid:
+            self.deactivate()
+            modifiers.grid = !modifiers.grid
+            let delegate = NSApplication.shared.delegate as! AppDelegate
+            delegate.modeCoordinator.setHintMode(mechanism: "Grid", modifiers: modifiers)
+            os_log("[Hint Mode] Grid")
 
         case .optionModifier:
             modifiers.option = !modifiers.option
@@ -419,9 +431,9 @@ class HintModeController: ModeController {
                 self.deactivate()
                 performHintAction(matchingHint, action: action)
 
-                if modifiers.multiple {
+                if modifiers.lock {
                     let delegate = NSApplication.shared.delegate as! AppDelegate
-                    delegate.modeCoordinator.setHintMode(mechanism: "Multiple", modifiers: modifiers)
+                    delegate.modeCoordinator.setHintMode(mechanism: "Lock", modifiers: modifiers)
                 }
                 return
             }
