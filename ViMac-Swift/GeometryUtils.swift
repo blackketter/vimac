@@ -56,24 +56,29 @@ class GeometryUtils {
     
     static func convertGlobalFrame(_ globalFrame: NSRect, relativeTo: NSPoint) -> NSRect {
         let menuBarScreen = NSScreen.screens.first!
-        
-        let origin = changeOrigin(globalFrame.origin, fromOrigin: menuBarScreen.frame.origin, toOrigin: relativeTo)
+        let screenFrame = GeometryUtils.screensFrame() // menuBarScreen.frame
+
+        let origin = changeOrigin(globalFrame.origin, fromOrigin: screenFrame.origin, toOrigin: relativeTo)
         return NSRect(origin: origin, size: globalFrame.size)
     }
 
     static func convertAXFrameToGlobal(_ axFrame: NSRect) -> NSRect {
-        let menuBarScreen = NSScreen.screens.first!
-        
+
         // uninvert the y-axis
         let topLeftRelativeToTopLeftMenuBar: NSPoint = NSPoint(
             x: axFrame.origin.x,
             y: -axFrame.origin.y
         )
+
+        let menuBarScreen = NSScreen.screens.first!
+        let menuBarScreenFrame = menuBarScreen.frame
+
+        let screensFrame = GeometryUtils.screensFrame() // menuBarScreen.frame
         
-        let topLeftMenuBarPosition = NSPoint(x: menuBarScreen.frame.origin.x, y: menuBarScreen.frame.origin.y + menuBarScreen.frame.height)
+        let topLeftMenuBarPosition = NSPoint(x: menuBarScreenFrame.origin.x, y: menuBarScreenFrame.origin.y + menuBarScreenFrame.height)
         let topLeftRelativeToGlobalOrigin = changeOrigin(topLeftRelativeToTopLeftMenuBar,
                                                          fromOrigin: topLeftMenuBarPosition,
-                                                         toOrigin: menuBarScreen.frame.origin)
+                                                         toOrigin: screensFrame.origin)
 
         let bottomLeftRelativeToGlobalOrigin = NSPoint(
             x: topLeftRelativeToGlobalOrigin.x,
@@ -89,5 +94,13 @@ class GeometryUtils {
         let x = point.x - deltaX
         let y = point.y - deltaY
         return NSPoint(x: x, y: y)
+    }
+
+    static func screensFrame() -> NSRect {
+        var screensFrame = NSRect()
+        for screen in NSScreen.screens {
+            screensFrame = screensFrame.union(screen.frame)
+        }
+        return screensFrame
     }
 }
