@@ -180,8 +180,10 @@ class HintModeUserInterface {
     }
     
     func frame() -> NSRect {
-        guard let window = window else {
-            return NSScreen.main!.frame
+        let allScreensFrame = GeometryUtils.screensFrame()
+
+       guard let window = window else {
+            return allScreensFrame //  NSScreen.main!.frame
         }
 
         let windowFrame = GeometryUtils.convertAXFrameToGlobal(window.frame)
@@ -196,7 +198,7 @@ class HintModeUserInterface {
 
         // a window can extend outside the screen it belongs to (NSScreen.main)
         // it is visible in other screens if the "Displays have separate spaces" option is disabled
-        return GeometryUtils.screensFrame()
+        return allScreensFrame
     }
 
     func show() {
