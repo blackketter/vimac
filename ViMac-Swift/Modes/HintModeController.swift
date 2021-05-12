@@ -10,6 +10,7 @@ import Cocoa
 import RxSwift
 import os
 import Segment
+import Preferences
 
 extension NSEvent {
     static func localEventMonitor(matching: EventTypeMask) -> Observable<NSEvent> {
@@ -55,6 +56,7 @@ enum HintModeInputIntent {
     case move
 
     case showHelp
+    case showPreferences
 
     static func from(event: NSEvent) -> HintModeInputIntent? {
         if event.type != .keyDown { return nil }
@@ -71,13 +73,13 @@ enum HintModeInputIntent {
         if event.keyCode == kVK_ANSI_Grave { return .center }
         if event.keyCode == kVK_ANSI_Equal { return .grid }
 
+        if event.keyCode == kVK_Space { return .leftClick }
+        if event.keyCode == kVK_Return { return .rightClick }
+
         if event.keyCode == kVK_ANSI_Z { return .optionModifier }
         if event.keyCode == kVK_ANSI_Quote { return .shiftModifier }
         if event.keyCode == kVK_ANSI_X { return .commandModifier }
         if event.keyCode == kVK_ANSI_Semicolon { return .controlModifier }
-
-        if event.keyCode == kVK_ANSI_Period { return .rightClick }
-        if event.keyCode == kVK_ANSI_Comma { return .leftClick }
 
         if event.keyCode == kVK_ANSI_1 { return .singleClick }
         if event.keyCode == kVK_ANSI_2 { return .doubleClick }
@@ -87,6 +89,7 @@ enum HintModeInputIntent {
         if event.keyCode == kVK_ANSI_Y { return .move }
 
         if event.keyCode == kVK_ANSI_Slash { return .showHelp }
+        if event.keyCode == kVK_ANSI_Comma { return .showPreferences }
 
         if let characters = event.charactersIgnoringModifiers {
             let action: HintAction = {
@@ -398,6 +401,11 @@ class HintModeController: ModeController {
 
         case .showHelp:
             os_log("[Hint Mode] Show Help")
+
+        case .showPreferences:
+            os_log("[Hint Mode] Show Preferences")
+            let delegate = NSApplication.shared.delegate as! AppDelegate
+            delegate.preferencesWindowController.show()
 
         case .backspace:
             guard let ui = ui,
