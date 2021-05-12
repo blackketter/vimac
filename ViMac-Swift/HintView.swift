@@ -13,7 +13,6 @@ let scale: CGFloat = 1.0  // adjust to debug at a larger size
 
 class HintView: NSView {
     static let borderColor = NSColor.darkGray
-    static let backgroundColor = UserDefaultsProperties.hintColor.read()
     static let untypedHintColor = NSColor.black
     static let typedHintColor = NSColor(red: 212 / 255, green: 172 / 255, blue: 58 / 255, alpha: 1)
 
@@ -54,7 +53,7 @@ class HintView: NSView {
         border.lineWidth = borderWidth
         border.lineJoinStyle = .miter
 
-        HintView.backgroundColor.setFill()
+        UserPreferences.HintMode.HintColorProperty.readColor().setFill()
         HintView.borderColor.setStroke()
 
         border.move(to:NSPoint(x:borderWidth, y:cornerRadius + borderWidth))
